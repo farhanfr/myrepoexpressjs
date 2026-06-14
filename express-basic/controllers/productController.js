@@ -1,80 +1,42 @@
-const express = require("express");
+const products = require("../data/products");
 
-const app = express();
+let nextId = 4;
 
-app.use(express.json());
+function getProducts(req, res) {
+    res.json(products);
+}
 
-const PORT = 3000;
-
-const users = [
-    { id: 1, name: "Farha" },
-    { id: 2, name: "Budi" },
-    { id: 3, name: "Siti" }
-];
-
-const products = [
-    { id: 1, name: "laptop", price: 1000 },
-    { id: 2, name: "Mouse", price: 1000 },
-    { id: 3, name: "keyboard", price: 1000 }
-];
-
-app.get("/", (req, res) => {
-    res.send("Hello Backend!");
-});
-
-app.get("/users", (req, res) => {
-    res.json(users);
-});
-
-app.get("/users/:id", (req, res) => {
+function getProductById(req, res) {
     const id = Number(req.params.id);
 
-    const user = users.find(user => user.id === id);
-
-    if (!user) {
-        return res.status(404).json({
-            message: "User tidak ditemukan"
-        });
-    }
-
-    res.json(user);
-});
-
-app.get("/products", (req, res) => {
-    res.json(products)
-});
-
-app.get("/products/count", (req, res) => {
-    res.json({
-        total:products.length
-    });
-});
-
-app.get("/products/:id", (req, res) => {
-    const id = Number(req.params.id);
-
-    const product = products.find(user => user.id === id);
+    const product = products.find(
+        product => product.id === id
+    );
 
     if (!product) {
         return res.status(404).json({
-            message: "Produk tidak ditemukan2"
+            message: "Produk tidak ditemukan"
         });
     }
 
     res.json(product);
-});
+}
 
-app.post("/products", (req, res) => {
+function createProduct(req, res) {
     const { name, price } = req.body;
 
-    if (name === undefined || name === "" || price === undefined || price === "") {
+    if (
+        typeof name !== "string" ||
+        name.trim() === "" ||
+        typeof price !== "number"
+    ) {
         return res.status(400).json({
-            message: "Nama dan harga harus diisi"
+            message: "Data tidak valid"
         });
     }
 
     const newProduct = {
-        id: products.length + 1,
+        id: nextId++,
         name,
         price
     };
@@ -85,9 +47,9 @@ app.post("/products", (req, res) => {
         message: "Produk berhasil ditambahkan",
         data: newProduct
     });
-});
+}
 
-app.put("/products/:id", (req, res) => {
+function updateProduct(req, res) {
     const id = Number(req.params.id);
 
     const { name, price } = req.body;
@@ -119,9 +81,9 @@ app.put("/products/:id", (req, res) => {
         message: "Produk berhasil diperbarui",
         data: product
     });
-});
+}
 
-app.delete("/products/:id", (req, res) => {
+function deleteProduct(req, res) {
     const id = Number(req.params.id);
 
     const index = products.findIndex(
@@ -142,9 +104,12 @@ app.delete("/products/:id", (req, res) => {
         message: "Produk berhasil dihapus",
         data: deletedProduct
     });
-});
+}
 
-
-app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
-});
+module.exports = {
+    getProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct
+};
