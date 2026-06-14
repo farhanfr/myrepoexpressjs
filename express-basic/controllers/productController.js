@@ -106,10 +106,15 @@ function deleteProduct(req, res) {
     });
 }
 
+function crash(req, res, next) {
+    next(new Error("Server meledak"));
+}
+
 module.exports = {
     getProducts,
     getProductById,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    crash
 };

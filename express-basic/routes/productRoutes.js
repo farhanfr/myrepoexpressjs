@@ -7,8 +7,18 @@ const {
     getProductById,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    crash
 } = require("../controllers/productController");
+
+
+router.use((req, res, next) => {
+    console.log("Masuk ke Products Router");
+
+    next();
+});
+
+router.get("/crash", crash);
 
 router.get("/", getProducts);
 
@@ -19,5 +29,7 @@ router.post("/", createProduct);
 router.put("/:id", updateProduct);
 
 router.delete("/:id", deleteProduct);
+
+
 
 module.exports = router;
