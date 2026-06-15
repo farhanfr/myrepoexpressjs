@@ -118,8 +118,9 @@ async function deleteProduct(req, res, next) {
 }
 
 function crash(req, res, next) {
-    next(new Error("Server meledak"));
+    next(new Error("Test crash"));
 }
+
 
 module.exports = {
     getProducts,
