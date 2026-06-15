@@ -1,9 +1,17 @@
 const products = require("../data/products");
+const prisma = require("../lib/prisma");
 
 let nextId = 4;
 
-function getProducts(req, res) {
-    res.json(products);
+
+async function getProducts(req, res, next) {
+     try {
+        const products = await prisma.product.findMany();
+
+        return res.json(products);
+    } catch (err) {
+        next(err);
+    }
 }
 
 function getProductById(req, res) {
@@ -22,88 +30,91 @@ function getProductById(req, res) {
     res.json(product);
 }
 
-function createProduct(req, res) {
-    const { name, price } = req.body;
+async function createProduct(req, res) {
+    try {
+        const { name, price } = req.body;
 
-    if (
-        typeof name !== "string" ||
-        name.trim() === "" ||
-        typeof price !== "number"
-    ) {
-        return res.status(400).json({
-            message: "Data tidak valid"
+        if (
+            typeof name !== "string" ||
+            name.trim() === "" ||
+            typeof price !== "number"
+        ) {
+            return res.status(400).json({
+                message: "Data tidak valid"
+            });
+        }
+
+        const product = await prisma.product.create({
+            data: {
+                name,
+                price
+            }
         });
+
+        return res.status(201).json({
+            message: "Produk berhasil ditambahkan",
+            data: product
+        });
+
+    } catch (err) {
+        next(err);
     }
-
-    const newProduct = {
-        id: nextId++,
-        name,
-        price
-    };
-
-    products.push(newProduct);
-
-    res.status(201).json({
-        message: "Produk berhasil ditambahkan",
-        data: newProduct
-    });
 }
 
-function updateProduct(req, res) {
-    const id = Number(req.params.id);
+async function updateProduct(req, res, next) {
+    try {
+        const id = Number(req.params.id);
 
-    const { name, price } = req.body;
+        const { name, price } = req.body;
 
-    const product = products.find(
-        product => product.id === id
-    );
+        if (
+            typeof name !== "string" ||
+            name.trim() === "" ||
+            typeof price !== "number"
+        ) {
+            return res.status(400).json({
+                message: "Data tidak valid"
+            });
+        }
 
-    if (!product) {
-        return res.status(404).json({
-            message: "Produk tidak ditemukan"
+        const product = await prisma.product.update({
+            where: {
+                id
+            },
+            data: {
+                name,
+                price
+            }
         });
-    }
 
-    if (
-        typeof name !== "string" ||
-        name.trim() === "" ||
-        typeof price !== "number"
-    ) {
-        return res.status(400).json({
-            message: "Data tidak valid"
+        return res.json({
+            message: "Produk berhasil diperbarui",
+            data: product
         });
+
+    } catch (err) {
+        next(err);
     }
-
-    product.name = name;
-    product.price = price;
-
-    return res.json({
-        message: "Produk berhasil diperbarui",
-        data: product
-    });
 }
 
-function deleteProduct(req, res) {
-    const id = Number(req.params.id);
+async function deleteProduct(req, res, next) {
+    try {
+        const id = Number(req.params.id);
 
-    const index = products.findIndex(
-        product => product.id === id
-    );
-
-    if (index === -1) {
-        return res.status(404).json({
-            message: "Produk tidak ditemukan"
+        const product = await prisma.product.delete({
+            where: {
+                id
+            }
         });
+
+        return res.json({
+            message: "Produk berhasil dihapus",
+            data: product
+        });
+
+    } catch (err) {
+        next(err);
     }
-
-    const deletedProduct = products[index];
-
-    products.splice(index, 1);
-
-    return res.json({
-        message: "Produk berhasil dihapus",
-        data: deletedProduct
-    });
 }
 
 function crash(req, res, next) {
